@@ -318,11 +318,11 @@ class FlaskPydanticSpec:
             if model not in definitions.keys():
                 definitions[model] = deepcopy(schema)
 
-            if "definitions" in schema:
-                for key, value in schema["definitions"].items():
+            if "$defs" in schema:
+                for key, value in schema["$defs"].items():
                     definitions[key] = self._get_open_api_schema(value)
-                del schema["definitions"]
-                if "definitions" in definitions[model]:
+                del schema["$defs"]
+                if "$defs" in definitions[model]:
                     del definitions[model]["definitions"]
 
         return definitions
