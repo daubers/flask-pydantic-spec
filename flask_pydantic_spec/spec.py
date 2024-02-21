@@ -77,7 +77,7 @@ class FlaskPydanticSpec:
         self.backend.register_route(self.app)
 
     def add_security_scheme(self, name:str, scheme: SecurityScheme):
-        self.security_schemes[name] = scheme
+        self.security_schemes[name] = scheme.dict()
 
     @property
     def spec(self) -> Mapping[str, Any]:
