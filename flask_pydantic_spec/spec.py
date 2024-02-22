@@ -117,6 +117,7 @@ class FlaskPydanticSpec:
         cookies: Optional[Type[BaseModel]] = None,
         resp: Optional[ResponseBase] = None,
         tags: Iterable[str] = (),
+        security: Optional[Dict[str, Any]] = None,
         deprecated: bool = False,
         before: Optional[Callable] = None,
         after: Optional[Callable] = None,
@@ -185,6 +186,9 @@ class FlaskPydanticSpec:
 
             if deprecated:
                 setattr(validation, "deprecated", True)
+
+            if security:
+                setattr(validation, "security", security)
 
             # register decorator
             setattr(validation, "_decorator", self)
