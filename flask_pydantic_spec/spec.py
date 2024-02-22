@@ -228,6 +228,9 @@ class FlaskPydanticSpec:
                 if hasattr(func, "deprecated"):
                     routes[path][method.lower()]["deprecated"] = True
 
+                if hasattr(func, "security"):
+                    routes[path][method.lower()]["security"] = getattr(func, "security", [])
+
                 request_body = parse_request(func)
                 if request_body:
                     routes[path][method.lower()]["requestBody"] = self._parse_request_body(
