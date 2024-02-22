@@ -117,7 +117,7 @@ class FlaskPydanticSpec:
         cookies: Optional[Type[BaseModel]] = None,
         resp: Optional[ResponseBase] = None,
         tags: Iterable[str] = (),
-        security: Optional[Dict[str, Any]] = None,
+        security: Optional[List[Dict[str, Any]]] = None,
         deprecated: bool = False,
         before: Optional[Callable] = None,
         after: Optional[Callable] = None,
