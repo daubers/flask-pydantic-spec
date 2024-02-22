@@ -11,6 +11,7 @@ from . import Request
 from .config import Config
 from .constants import OPENAPI_SCHEMA_TEMPLATE
 from .flask_backend import FlaskBackend
+from .security_components import SecurityScheme
 from .types import RequestBase, ResponseBase
 from .utils import (
     parse_comments,
@@ -61,6 +62,7 @@ class FlaskPydanticSpec:
         self.backend = backend(self)
         # init
         self.models: Dict[str, Any] = {}
+        self.security_schemes: Dict[str, Any] = {}
         if app:
             self.register(app)
 
@@ -73,6 +75,9 @@ class FlaskPydanticSpec:
         """
         self.app = app
         self.backend.register_route(self.app)
+
+    def add_security_scheme(self, name:str, scheme: SecurityScheme):
+        self.security_schemes[name] = scheme.model_dump(by_alias=True)
 
     @property
     def spec(self) -> Mapping[str, Any]:
@@ -112,6 +117,7 @@ class FlaskPydanticSpec:
         cookies: Optional[Type[BaseModel]] = None,
         resp: Optional[ResponseBase] = None,
         tags: Iterable[str] = (),
+        security: Optional[List[Dict[str, Any]]] = None,
         deprecated: bool = False,
         before: Optional[Callable] = None,
         after: Optional[Callable] = None,
@@ -181,6 +187,9 @@ class FlaskPydanticSpec:
             if deprecated:
                 setattr(validation, "deprecated", True)
 
+            if security:
+                setattr(validation, "security", security)
+
             # register decorator
             setattr(validation, "_decorator", self)
             return validation
@@ -219,6 +228,9 @@ class FlaskPydanticSpec:
                 if hasattr(func, "deprecated"):
                     routes[path][method.lower()]["deprecated"] = True
 
+                if hasattr(func, "security"):
+                    routes[path][method.lower()]["security"] = getattr(func, "security", [])
+
                 request_body = parse_request(func)
                 if request_body:
                     routes[path][method.lower()]["requestBody"] = self._parse_request_body(
@@ -236,7 +248,10 @@ class FlaskPydanticSpec:
             },
             "tags": list(tags.values()),
             "paths": {**routes},
-            "components": {"schemas": {**self._get_model_definitions()}},
+            "components": {
+                "securitySchemes": {**self.security_schemes},
+                "schemas": {**self._get_model_definitions()}
+            },
         }
         return spec
 
@@ -310,12 +325,12 @@ class FlaskPydanticSpec:
             if model not in definitions.keys():
                 definitions[model] = deepcopy(schema)
 
-            if "definitions" in schema:
-                for key, value in schema["definitions"].items():
+            if "$defs" in schema:
+                for key, value in schema["$defs"].items():
                     definitions[key] = self._get_open_api_schema(value)
-                del schema["definitions"]
-                if "definitions" in definitions[model]:
-                    del definitions[model]["definitions"]
+                del schema["$defs"]
+                if "$defs" in definitions[model]:
+                    del definitions[model]["$defs"]
 
         return definitions
 

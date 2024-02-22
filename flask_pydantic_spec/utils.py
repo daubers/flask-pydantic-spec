@@ -169,7 +169,7 @@ def default_before_handler(
         logger.info(
             "Validation Error",
             extra={
-                "spectree_model": req_validation_error.model.__name__,
+
                 "spectree_validation": req_validation_error.errors(),
             },
         )
