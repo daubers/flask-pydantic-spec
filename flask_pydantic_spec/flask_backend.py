@@ -193,7 +193,7 @@ class FlaskBackend:
             self.request_validation(request, query, body, headers, cookies)
         except ValidationError as err:
             req_validation_error = err
-            response = make_response(jsonify(err.errors()), self.config.VALIDATION_ERROR_CODE)
+            response = make_response(err.json(), self.config.VALIDATION_ERROR_CODE)
 
         before(request, response, req_validation_error, None)
         if req_validation_error:
